@@ -1,0 +1,552 @@
+---
+title: "Data Presentation and Visualization"
+author: Sean Davis, MD, PhD<br/>National Cancer Institute<br/>National Institutes of Health<br/>Bethesda, MD, USA
+date: "September 12, 2017"
+output:
+  revealjs::revealjs_presentation:
+    theme: "night"
+    reveal_plugins: ['notes', 'menu']
+    self_contained: false
+    reveal_options:
+      slideNumber: true
+      previewLinks: true
+bibliography: graphs.bib
+nocite: |
+  @Few2008-os
+---
+
+# Overview
+
+## <br/>
+
+> This section is based on talk by Karl W. Broman titled "How to Display Data Badly" in which he described how the default plots offered by Microsoft Excel "obscure your data and annoy your readers". His lecture was inspired by the 1984 paper by H Wainer: How to display data badly. Dr. Wainer was the first to elucidate the principles of the bad display of data. But according to Karl "The now widespread use of Microsoft Excel has resulted in remarkable advances in the field."
+
+## Rules for bad data display (Rafa)
+
+- Display as little information as possible.
+- Obscure what you do show (with chart junk).
+- Use pseudo-3d and color gratuitously.
+- Make a pie chart (preferably in color and 3d).
+- Use a poorly chosen scale.
+- Ignore significant digits (more is always better, right)?
+
+## Rules for better data display (Karl)
+
+- Show the data
+- Avoid chart junk
+- Consider taking logs and/or differences
+- Put the things to be compared next to each other
+- Use color to set things apart, but consider color blind folks
+- Use position rather than angle or area to represent quantities
+- Align things vertically to ease comparisons
+- Use common axis limits to ease comparisons
+- Use labels rather than legends
+- Sort on meaningful variables (not alphabetically)
+- Must 0 be included in the axis limits?
+
+
+
+# Show the data
+
+<style type="text/css">
+p { text-align: left; }
+
+.midcenter {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+}
+</style>
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, results='hide',
+                      fig.align = "center", cache=TRUE,
+                      fig.width=12, fig.height=9/4*3)
+library(png)
+library(ggplot2)
+library(grid)
+library(dplyr)
+library(plotrix)
+library(tidyr)
+library(ggthemes)
+library(knitcitations)
+bib <- read.bibtex("graphs.bib")
+# citet(bib["bloggs2002"])
+```
+
+## <br/>
+
+```{r fig.align="center"}
+grid.raster(readPNG('Figs/fig1d.png'))
+```
+
+## <br/>
+
+```{r fig.align="center"}
+grid.raster(readPNG('Figs/fig1e.png'))
+```
+
+## <br/>
+
+```{r fig.align="center"}
+grid.raster(readPNG('Figs/fig1f.png'))
+```
+
+## <br/>
+
+```{r fig.align="center"}
+grid.raster(readPNG('Figs/fig1g.png'))
+```
+
+
+## <br/>
+
+```{r fig.align="center"}
+grid.raster(readPNG('Figs/fig1h.png'))
+```
+
+## <br/>
+
+```{r fig.align="center"}
+grid.raster(readPNG('Figs/fig1c.png'))
+```
+
+## <br/>
+
+```{r }
+fig1c = rasterGrob(readPNG('Figs/fig1c.png'))
+load('R/fig1.RData')
+fig1df = data.frame(Group=rep(c('Treatment','Control'),each=length(y)),Response=c(x,y))
+g = ggplot(fig1df,aes(x=Group,y=Response)) + geom_boxplot()
+gridExtra::grid.arrange(grobs=list(g,fig1c),ncol=2)
+```
+
+## <br/>
+
+```{r ggplot2_1, fig.cap = 'Boxplots and violin plots'}
+g = ggplot(fig1df,aes(x=Group,y=Response)) + geom_boxplot() + theme_base(base_size=22)
+g2 = ggplot(fig1df,aes(x=Group,y=Response)) + geom_violin() + theme_base(base_size=22)
+gridExtra::grid.arrange(grobs=list(g,g2),ncol=2)
+```
+
+## <br/>
+
+```{r fig.cap = 'Boxplot vs. actual datapoints'}
+g = ggplot(fig1df,aes(x=Group,y=Response)) + geom_boxplot() + theme_base(base_size=22)
+g2 = ggplot(fig1df,aes(x=Group,y=Response)) + geom_point() + theme_base(base_size=22)
+gridExtra::grid.arrange(grobs=list(g,g2),ncol=2)
+```
+    
+## <br/>
+
+```{r fig.cap = 'Boxplot vs. actual datapoints, but with some spice'}
+g = ggplot(fig1df,aes(x=Group,y=Response)) + geom_boxplot() + theme_base(base_size=22)
+g2 = ggplot(fig1df,aes(x=Group,y=Response)) + geom_jitter(width = 0.05) + theme_base(base_size=22)
+gridExtra::grid.arrange(grobs=list(g,g2),ncol=2)
+```
+    
+## <br/>
+
+```{r  fig.cap='ggplot2 vs `base` theme'}
+g = ggplot(fig1df,aes(x=Group,y=Response)) + geom_jitter(width = 0.05) + theme_base(base_size=22)
+g2 = ggplot(fig1df,aes(x=Group,y=Response)) + geom_jitter(width = 0.05) +  theme_base(base_size=22)
+gridExtra::grid.arrange(grobs=list(g,g2),ncol=2)
+```
+
+## <br/>
+
+```{r fig.cap='ggplot2 vs `Tufte` theme'}
+g = ggplot(fig1df,aes(x=Group,y=Response)) + geom_jitter(width = 0.05) + theme_base(base_size=22)
+g2 = ggplot(fig1df,aes(x=Group,y=Response)) + geom_jitter(width = 0.05) + theme_tufte(base_size=22)
+gridExtra::grid.arrange(grobs=list(g,g2),ncol=2)
+```
+
+# Avoid Pie Charts
+
+## <br/>
+
+```{r}
+dat = c(12,10,16,14,18)
+countries = c("US", "UK", "Australia", "Germany", "France")
+names(dat) = countries
+pie(dat)
+```
+
+## <br/>
+
+```{r}
+library(plotrix)
+pie3D(dat,labels=countries)
+```
+
+## <br/>
+
+```{r}
+library(plotrix)
+pie3D(dat,labels=countries,explode=0.1)
+```
+
+## <br/>
+
+```{r}
+par(mfrow=c(1,2))
+dat1 = c(10,11,12,13,14)
+names(dat1) = LETTERS[1:5]
+pie(dat1)
+dat2 = c(10,13,12,11,14)
+names(dat2) = LETTERS[1:5]
+pie(dat2)
+```
+
+## <br/>
+
+```{r}
+par(mfrow=c(2,2),mar=c(3,3,0,0))
+pie(dat1)
+pie(dat2)
+barplot(dat1)
+barplot(dat2)
+```
+
+# Consider logs
+
+## <br/>
+
+```{r logs}
+load('R/fig3.RData')
+fig3df = data.frame(Group=rep(c('Treatment','Control'),each=length(y)),Response=c(x,y))
+ggplot(fig3df,aes(x=Group, y = Response)) + geom_jitter(width=0.05) + theme_tufte(base_size=22)
+```
+
+## <br/>
+
+```{r}
+ggplot(fig3df,aes(x=Group, y = Response)) + geom_jitter(width=0.05) +
+    theme_tufte(base_size=20) + scale_y_log10()
+```
+
+## <br/>
+
+```{r}
+g1 = ggplot(fig3df,aes(x=Group, y = Response)) + geom_jitter(width=0.05) +
+    theme_tufte(base_size=20)
+g2 = ggplot(fig3df,aes(x=Group, y = Response)) + geom_jitter(width=0.05) +
+    theme_tufte(base_size=20) + scale_y_log10()
+gridExtra::grid.arrange(grobs=list(g1,g2),ncol=2)
+```
+
+# Make the point
+
+## <br/>
+
+```{r}
+library(Biobase)
+library(SpikeInSubset)
+data(mas95)
+r <- exprs(mas95)[,1] ##original measures were not logged
+g <- exprs(mas95)[,2]
+plot(r,g,lwd=2,cex=0.2,pch=16,
+     xlab=expression(paste(E[1])),
+     ylab=expression(paste(E[2])), 
+     main=paste0("corr=",signif(cor(r,g),3)))
+abline(0,1,col=2,lwd=2)
+```
+
+## <br/>
+
+```{r}
+plot(r,g,lwd=2,cex=0.5,pch=16,
+     xlab=expression(paste(E[1])),
+     ylab=expression(paste(E[2])), 
+     main=paste0("corr=",signif(cor(r,g),3)))
+abline(0,1,col=2,lwd=2)
+f <- function(a,x,y,p=0.95) mean(x<=a & y<=a)-p
+a95 <- uniroot(f,lower=2000,upper=20000,x=r,y=g)$root
+abline(a95,-1,lwd=2,col=1)
+text(8500,0,"95% of data below this line",col=1,cex=1.2,adj=c(0,0))
+```
+
+## <br/>
+
+```{r fig.cap="Log is better"}
+r <- log2(r)
+g <- log2(g)
+plot(r,g,lwd=2,cex=0.5,pch=16,
+     xlab=expression(paste(log[2], " ", E[1])),
+     ylab=expression(paste(log[2], " ", E[2])),
+     main=paste0("corr=",signif(cor(r,g),3)))
+abline(0,1,col=2,lwd=2)
+```
+
+## <br/>
+
+
+```{r fig.cap = "Focus reader on important aspects of data"}
+plot((r+g)/2,(r-g),lwd=2,cex=0.5,pch=16,
+     xlab=expression(paste("Ave{ ",log[2], " ", E[1],", ",log[2], " ", E[2]," }")),
+     ylab=expression(paste(log[2]," { ",E[1]," / ",E[2]," }")),
+     main=paste0("SD=",signif(sqrt(mean((r-g)^2)),3)))
+abline(h=0,col=2,lwd=2)
+abline(h=1,col=2,lty=2,lwd=1)
+abline(h=-1,col=2,lty=2,lwd=1)
+```
+
+# Guide and ease comparisons
+
+## <br/>
+
+```{r comparisons}
+grid.raster(readPNG('Figs/fig6r_e.png'))
+```
+
+## <br/>
+
+```{r }
+grid.raster(readPNG('Figs/fig6r_g.png'))
+```
+
+## <br/>
+
+```{r }
+grid.raster(readPNG('Figs/fig6r_f.png'))
+```
+
+## <br/>
+
+```{r}
+set.seed(12201970)
+before <- runif(6, 5, 8)
+after <- rnorm(6, before*1.05, 2)
+plot(before,after,pch=16,cex=2)
+```
+
+## <br/>
+
+```{r }
+plot(before,after-before,pch=16,cex=2)
+```
+
+## <br/>
+
+```{r slopegraph}
+mat = data.frame(before,after)
+rownames(mat) = NULL
+slopegraph(mat)
+```
+
+## <br/>
+    
+```{r cancerslopegraph,fig.height=6,fig.width=8}
+data(cancer)
+par(cex=0.6)
+slopegraph(cancer)
+```
+
+## Lots of choices 
+
+```{r }
+grid.raster(readPNG('Figs/broman_comparison_fig.png'))
+```
+
+# Don't leave out important factors
+
+```{r}
+set.seed(123)
+df = data.frame(gender=rep(c('male','female'),each=60),genotype=rep(c('AA','AB','BB'),times=40))
+df$phenotype = with(df,26 + as.numeric(gender)*1.3 + as.numeric(genotype)*3 + rnorm(120))
+```
+
+## <br/>
+
+```{r}
+ggplot(df,aes(x=gender,y=phenotype)) + theme_tufte(base_size=18) + geom_jitter(width=0.05)
+```
+
+## <br/>
+
+```{r}
+ggplot(df,aes(x=gender,y=phenotype,color=genotype)) + theme_tufte(base_size=18) + geom_jitter(width=0.05)
+```
+
+## <br/>
+
+```{r}
+ggplot(df,aes(x=genotype,y=phenotype)) + facet_grid(. ~ gender) + geom_jitter(width=0.05) + theme_base(base_size=18)
+```
+
+## <br/>
+
+```{r}
+ggplot(df,aes(x=gender,y=phenotype)) + facet_grid(. ~ genotype) + geom_jitter(width=0.05) + theme_base(base_size=18)
+```
+
+
+## <br/>
+
+```{r}
+ggplot(df,aes(x=gender,y=phenotype,color=gender)) + facet_grid(. ~ genotype) + geom_jitter(width=0.05) + theme_base()
+```
+
+## <br/>
+
+```{r}
+ggplot(df,aes(x=gender,y=phenotype,color=genotype)) + facet_grid(. ~ genotype) + geom_jitter(width=0.05) + theme_base()
+```
+
+## <br/>
+
+```{r}
+ggplot(df,aes(x=gender,y=phenotype)) + facet_grid(. ~ genotype) + theme_tufte() + geom_tufteboxplot()
+```
+
+# Choose appropropriate scales and axes
+
+## Value ~ Radius
+
+```{r fig.width=6,fig.height=6}
+s = c(Arabidopsis=0.145,Human=3.2,Wheat=17)
+r = s
+plot(0,0,xlim=c(-r[3]-2,r[3]+2),ylim=c(-r[3]-2,r[3]+2),type='n',axes=FALSE,xlab="",ylab="")
+draw.circle(0,0,radius=r[3],col='red')
+draw.circle(0,0,radius=r[2],col='blue')
+draw.circle(0,0,radius=r[1],col='white')
+```
+
+## Value ~ Area
+
+```{r fig.width=6,fig.height=6}
+s = c(Arabidopsis=0.145,Human=3.2,Wheat=17)
+r = sqrt(s/pi)
+plot(0,0,xlim=c(-r[3]-2,r[3]+2),ylim=c(-r[3]-2,r[3]+2),type='n',axes=FALSE,xlab="",ylab="")
+draw.circle(0,0,radius=r[3],col='red')
+draw.circle(0,0,radius=r[2],col='blue')
+draw.circle(0,0,radius=r[1],col='white')
+```
+
+## Value ~ Length
+
+```{r}
+barplot(s)
+```
+
+# Miscellaneous
+
+## Sorting
+
+```{r}
+load('Data/health.RData')
+colnames(health) = c('Country',"Spending")
+ggplot(health,aes(y=Country,x=Spending)) + geom_point() + ylab('Country') + 
+    xlab('Spending (%GDP)')
+```
+
+## Sorting
+
+```{r}
+load('Data/health.RData')
+colnames(health) = c('Country',"Spending")
+health=rev(health)
+ggplot(health,aes(y=reorder(Country,Spending),x=Spending)) + geom_point() + ylab('Country') +
+    xlab('Spending (%GDP)')
+```
+
+## Compare distributions
+
+```{r}
+dat = read.csv('https://raw.githubusercontent.com/seandavi/ITR/master/BRFSS-subset.csv')
+ggplot(dat,aes(x=Height)) + geom_histogram()
+```
+
+## Compare distributions
+
+```{r}
+ggplot(dat,aes(x=Height,fill=Sex)) + geom_histogram()
+```
+
+## Compare distributions
+
+```{r}
+ggplot(dat,aes(x=Height)) + geom_histogram() + facet_grid( . ~ Sex)
+```
+
+## Compare distributions
+
+```{r}
+ggplot(dat,aes(x=Height,fill=Sex)) + geom_density(alpha=0.5)
+```
+
+## Include Zero?
+
+```{r}
+plot1 = ggplot(df,aes(x=genotype,y=phenotype)) + geom_boxplot() + ylim(c(0,37))
+plot2 = ggplot(df,aes(x=genotype,y=phenotype)) + geom_boxplot() 
+grid.arrange(plot1, plot2, ncol=2)
+```
+
+## Blow it with 3D
+
+```{r }
+grid.raster(readPNG('Figs/fig8b.png'))
+```
+
+## Colors and [R]ColorBrewer
+
+```{r colorbrewer}
+library(RColorBrewer)
+display.brewer.all()
+```
+
+# Wrap up
+
+## Encoding data
+
+The human eye has varying difficulty with interpreting graphical features. When encoding data, thing about using these features, in order from easiest to most difficult.
+
+- Quantitative data
+    + Position
+    + Length
+    + Angle
+    + Area
+    + Luminance (light/dark)
+    + Chroma (amount of color)
+- Categorical data
+    + Shape
+    + Hue (which color)
+    + Texture
+    +  Width
+
+## Rules for bad data display
+
+- Display as little information as possible.
+- Obscure what you do show (with chart junk).
+- Use pseudo-3d and color gratuitously.
+- Make a pie chart (preferably in color and 3d).
+- Use a poorly chosen scale.
+- Ignore significant digits (more is always better, right)?
+
+## Rules for better data display
+
+- Show the data
+- Avoid chart junk
+- Consider taking logs and/or differences
+- Put the things to be compared next to each other
+- Use color to set things apart, but consider color blind folks
+- Use position rather than angle or area to represent quantities
+- Align things vertically to ease comparisons
+- Use common axis limits to ease comparisons
+- Use labels rather than legends
+- Sort on meaningful variables (not alphabetically)
+- Must 0 be included in the axis limits?
+
+
+## References
+
+
+- H Wainer: How to display data badly. American Statistician 38(2): 137--147
+- Karl Broman and Rafa Irizzary https://github.com/kbroman/Talk_Graphs/
+- https://www.biostat.wisc.edu/~kbroman/presentations/graphs2017.pdf
+- [R graph gallery](http://www.r-graph-gallery.com/all-graphs/)
+- ggplot2 http://ggplot2.org/
+- https://www.edwardtufte.com/tufte/
+
