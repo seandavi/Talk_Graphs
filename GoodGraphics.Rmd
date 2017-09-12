@@ -5,8 +5,6 @@ date: "September 12, 2017"
 output:
   revealjs::revealjs_presentation:
     theme: "night"
-    reveal_plugins: ['notes', 'menu']
-    self_contained: false
     reveal_options:
       slideNumber: true
       previewLinks: true
